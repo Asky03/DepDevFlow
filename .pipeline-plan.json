@@ -1,0 +1,31 @@
+{
+  "project": "DepDevFlow",
+  "files": [
+    "Jenkinsfile",
+    "scripts/analyze-changes.js"
+  ],
+  "classifications": {
+    "pipeline": [
+      "Jenkinsfile"
+    ],
+    "pipeline-security": [
+      "Jenkinsfile"
+    ],
+    "application": [
+      "scripts/analyze-changes.js"
+    ],
+    "application-security": [
+      "scripts/analyze-changes.js"
+    ]
+  },
+  "stages": {
+    "tests": true,
+    "secretScan": true,
+    "dependencyScan": true,
+    "sast": true,
+    "containerBuild": true,
+    "containerScan": true,
+    "infrastructureScan": false,
+    "pipelineSecurity": true
+  }
+}
