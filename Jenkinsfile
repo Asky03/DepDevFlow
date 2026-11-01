@@ -53,30 +53,28 @@ pipeline {
         }
 
         stage('4a. Adaptive Infrastructure Scan') {
-            when {
-                expression {
-                    if (!fileExists('.pipeline-plan.json')) {
-                        return false
-                    }
-
-                    def plan = new groovy.json.JsonSlurperClassic()
-                        .parseText(readFile('.pipeline-plan.json'))
-
-                    return plan.stages?.infrastructureScan == true
-                }
+    when {
+        expression {
+            if (!fileExists('.pipeline-plan.json')) {
+                return false
             }
 
-            steps {
-                echo 'Infrastructure changes detected. Running configuration security checks.'
-
-                bat '''
-                    "%DOCKER_EXE%" run --rm ^
-                      -v "%WORKSPACE%:/src" ^
-                      aquasec/trivy:latest ^
-                      config --exit-code 1 --severity HIGH,CRITICAL /src
-                '''
-            }
+            return readFile('.pipeline-plan.json')
+                .contains('"infrastructureScan": true')
         }
+    }
+
+    steps {
+        echo 'Infrastructure changes detected. Running configuration security checks.'
+
+        bat '''
+            "%DOCKER_EXE%" run --rm ^
+              -v "%WORKSPACE%:/src" ^
+              aquasec/trivy:latest ^
+              config --exit-code 1 --severity HIGH,CRITICAL /src
+        '''
+    }
+}
 
         stage('5. Secret Detection') {
             steps {
