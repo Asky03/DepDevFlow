@@ -8,18 +8,21 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = 'depdevflow'
-    }
+    IMAGE_NAME = 'depdevflow'
+    PATH+DOCKER = 'C:\Users\ASUS\AppData\Local\Programs\DockerDesktop\resources\bin\docker'
+}
 
     stages {
         stage('1. Environment Check') {
-            steps {
-                bat 'git --version'
-                bat 'node --version'
-                bat 'npm --version'
-                bat 'docker --version'
-            }
-        }
+    steps {
+        bat 'git --version'
+        bat 'node --version'
+        bat 'npm --version'
+        bat 'where docker'
+        bat 'docker --version'
+        bat 'docker info --format "Docker engine: {{.ServerVersion}}"'
+    }
+}
 
         stage('2. Install Dependencies') {
             steps {
@@ -48,6 +51,32 @@ pipeline {
                 )
             }
         }
+
+        stage('4a. Adaptive Infrastructure Scan') {
+             when {
+        expression {
+            if (!fileExists('.pipeline-plan.json')) {
+                return false
+            }
+
+            def plan = new groovy.json.JsonSlurperClassic()
+                .parseText(readFile('.pipeline-plan.json'))
+
+            return plan.classifications.containsKey('infrastructure')
+        }
+    }
+
+    steps {
+        echo 'Infrastructure changes detected. Running configuration security checks.'
+
+        bat '''
+            docker run --rm ^
+              -v "%WORKSPACE%:/src" ^
+              aquasec/trivy:latest ^
+              config --exit-code 1 --severity HIGH,CRITICAL /src
+        '''
+    }
+}
 
         stage('5. Secret Detection') {
             steps {
@@ -78,21 +107,33 @@ pipeline {
         }
 
         stage('8. Docker Build') {
-            steps {
-                bat 'docker build -t depdevflow:ci .'
-            }
-        }
+    steps {
+        bat 'docker build -t depdevflow:ci .'
+        bat 'docker save -o depdevflow.tar depdevflow:ci'
+    }
+}
 
         stage('9. Container Vulnerability Scan') {
-            steps {
-                bat '''
-                    docker run --rm ^
-                      -v /var/run/docker.sock:/var/run/docker.sock ^
-                      aquasec/trivy:latest ^
-                      image --exit-code 1 --severity HIGH,CRITICAL depdevflow:ci
-                '''
-            }
+    steps {
+        bat '''
+            docker run --rm ^
+              -v "%WORKSPACE%:/repo" ^
+              aquasec/trivy:latest ^
+              image --input /repo/depdevflow.tar ^
+              --exit-code 1 ^
+              --severity HIGH,CRITICAL
+        '''
+    }
+
+    post {
+        always {
+            archiveArtifacts(
+                artifacts: 'depdevflow.tar',
+                allowEmptyArchive: true
+            )
         }
+    }
+}
     }
 
     post {
