@@ -9,7 +9,7 @@ pipeline {
 
     environment {
     IMAGE_NAME = 'depdevflow'
-    PATH+DOCKER = 'C:\Users\ASUS\AppData\Local\Programs\DockerDesktop\resources\bin\docker'
+    PATH+DOCKER = 'C:/Users/ASUS/AppData/Local/Programs/DockerDesktop/resources/bin'
 }
 
     stages {
@@ -110,6 +110,8 @@ pipeline {
     steps {
         bat 'docker build -t depdevflow:ci .'
         bat 'docker save -o depdevflow.tar depdevflow:ci'
+    }
+}
     }
 }
 
