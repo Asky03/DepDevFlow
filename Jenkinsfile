@@ -9,7 +9,7 @@ pipeline {
 
     environment {
     IMAGE_NAME = 'depdevflow'
-    PATH+DOCKER = 'C:/Users/ASUS/AppData/Local/Programs/DockerDesktop/resources/bin'
+    DOCKER_EXE = 'C:/Users/ASUS/AppData/Local/Programs/DockerDesktop/resources/bin/docker.exe'
 }
 
     stages {
@@ -18,9 +18,8 @@ pipeline {
         bat 'git --version'
         bat 'node --version'
         bat 'npm --version'
-        bat 'where docker'
-        bat 'docker --version'
-        bat 'docker info --format "Docker engine: {{.ServerVersion}}"'
+        bat '"%DOCKER_EXE%" --version'
+        bat '"%DOCKER_EXE%" info'
     }
 }
 
