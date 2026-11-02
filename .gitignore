@@ -1,4 +1,4 @@
-﻿node_modules/
+node_modules/
 .env
 .env.*
 !.env.example
@@ -28,3 +28,6 @@ Jenkinsfile.backup
 
 # Local dependencies
 node_modules/
+# SonarQube generated files
+.scannerwork/
+.sonar/

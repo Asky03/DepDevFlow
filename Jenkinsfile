@@ -104,6 +104,22 @@ pipeline {
             }
         }
 
+        stage('8a. SonarQube Analysis') {
+            steps {
+                echo 'Running SonarQube code analysis and waiting for the Quality Gate.'
+
+                withCredentials([
+                    string(
+                        credentialsId: 'sonarqube-token',
+                        variable: 'SONAR_TOKEN'
+                    )
+                ]) {
+                    withEnv(['SONAR_HOST_URL=http://localhost:9000']) {
+                        bat 'npx --yes @sonar/scan'
+                    }
+                }
+            }
+        }
         stage('8. Docker Build') {
             steps {
                 bat '"%DOCKER_EXE%" build -t depdevflow:ci .'
