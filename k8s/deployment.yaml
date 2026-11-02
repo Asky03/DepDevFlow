@@ -1,0 +1,41 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: depdevflow
+  labels:
+    app: depdevflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: depdevflow
+  template:
+    metadata:
+      labels:
+        app: depdevflow
+    spec:
+      containers:
+        - name: depdevflow
+          image: depdevflow:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

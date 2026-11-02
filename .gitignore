@@ -14,3 +14,17 @@ npm-debug.log*
 
 .DS_Store
 Thumbs.db
+
+# Local backups
+Jenkinsfile.backup
+
+# Local Docker image archives
+*.tar
+
+# Local environment and secret files
+.env
+.env.*
+!.env.example
+
+# Local dependencies
+node_modules/

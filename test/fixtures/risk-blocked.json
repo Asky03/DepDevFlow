@@ -1,0 +1,9 @@
+{
+  "testsPassed": true,
+  "secretDetected": false,
+  "findings": [
+    {
+      "severity": "HIGH"
+    }
+  ]
+}
