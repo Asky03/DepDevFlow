@@ -1,33 +1,45 @@
-node_modules/
+﻿
+# Environment variables and secrets
 .env
 .env.*
 !.env.example
-
-coverage/
-.nyc_output/
-npm-debug.log*
-
+secrets/
+credentials/
 *.pem
 *.key
 *.p12
 *.pfx
 
-.DS_Store
-Thumbs.db
-
-# Local backups
-Jenkinsfile.backup
-
-# Local Docker image archives
-*.tar
-
-# Local environment and secret files
-.env
-.env.*
-!.env.example
-
-# Local dependencies
+# Node.js dependencies
 node_modules/
+
 # SonarQube generated files
 .scannerwork/
-.sonar/
+
+# Generated container archives
+*.tar
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+index-html-dump.txt
+server-js-dump.txt
+
+# Backup files
+*.backup
+*.backup-*
+*.bak
+*.old
+
+# Local editor configuration
+.vscode/
+
+# Generated build output
+coverage/
+dist/
+build/
+
+# Operating system files
+.DS_Store
+Thumbs.db
