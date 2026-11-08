@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17191b">
+  <title>DepDevFlow — Operations Dashboard</title>
+
+  <style>
+    :root {
+      --bg: #17191b;
+      --sidebar: #202224;
+      --panel: #202224;
+      --panel-head: #292b2d;
+      --line: #3b3e40;
+      --text: #e2e4e5;
+      --muted: #92989b;
+      --blue: #568fc5;
+      --green: #4b9b72;
+      --red: #d6535b;
+      --yellow: #e4b34e;
+      --orange: #e58a3a;
+      --font: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 12px var(--font);
+    }
+
+    a {
+      color: #8bb9e3;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .topbar {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      padding: 0 16px;
+      background: #303234;
+      border-bottom: 1px solid #46484a;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .brand {
+      font-size: 19px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .brand span {
+      color: var(--orange);
+    }
+
+    .topnav {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      min-height: 44px;
+      overflow-x: auto;
+    }
+
+    .topnav a {
+      color: #d0d2d3;
+      white-space: nowrap;
+      padding: 15px 0;
+    }
+
+    .topright {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #c3c6c8;
+      white-space: nowrap;
+    }
+
+    .badge {
+      border: 1px solid #56595b;
+      padding: 5px 8px;
+      font-size: 10px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 164px minmax(0, 1fr);
+      min-height: calc(100vh - 44px);
+    }
+
+    .sidebar {
+      background: var(--sidebar);
+      border-right: 1px solid #37393b;
+      padding: 14px 0;
+    }
+
+    .side-title {
+      color: #858b8e;
+      padding: 8px 15px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .side-link {
+      display: block;
+      color: #c5c8ca;
+      padding: 11px 15px;
+      border-left: 3px solid transparent;
+    }
+
+    .side-link:hover {
+      background: #292c2e;
+      text-decoration: none;
+    }
+
+    .side-link.active {
+      background: #303335;
+      border-left-color: var(--orange);
+      color: white;
+    }
+
+    .side-bottom {
+      margin: 25px 12px 0;
+      padding: 14px 3px;
+      border-top: 1px solid var(--line);
+      color: #858b8e;
+      font-size: 10px;
+      line-height: 1.8;
+    }
+
+    main {
+      min-width: 0;
+      padding: 0 17px 24px;
+    }
+
+    .pagebar {
+      min-height: 43px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      color: #aeb3b5;
+    }
+
+    .actions {
+      display: flex;
+      gap: 7px;
+    }
+
+    .btn {
+      background: #3a3d3f;
+      border: 1px solid #55595b;
+      color: #e1e3e4;
+      padding: 7px 10px;
+    }
+
+    .btn.primary {
+      background: #426d91;
+      border-color: #5687ad;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 17px 0 13px;
+    }
+
+    h1 {
+      font-size: 21px;
+      font-weight: 400;
+      margin: 0 0 6px;
+    }
+
+    h2 {
+      font-size: 14px;
+      font-weight: 400;
+      margin: 0 0 10px;
+    }
+
+    .sub,
+    .muted,
+    .small-note {
+      color: var(--muted);
+    }
+
+    .sub {
+      font-size: 11px;
+    }
+
+    .time {
+      color: #a8adaf;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .notice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #242628;
+      border: 1px solid var(--line);
+      padding: 11px 12px;
+      margin-bottom: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .notice-dot {
+      height: 7px;
+      width: 7px;
+      border-radius: 50%;
+      background: var(--orange);
+      flex-shrink: 0;
+    }
+
+    .notice.good .notice-dot {
+      background: var(--green);
+    }
+
+    .notice.bad .notice-dot {
+      background: var(--red);
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+
+    .kpi {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      min-height: 90px;
+      padding: 11px;
+      min-width: 0;
+    }
+
+    .kpi-label {
+      color: #a9afb2;
+      font-size: 10px;
+      margin-bottom: 12px;
+    }
+
+    .kpi-value {
+      font-size: 23px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .kpi-foot {
+      color: #8f9699;
+      font-size: 10px;
+      margin-top: 7px;
+      overflow-wrap: anywhere;
+    }
+
+    .good {
+      color: #77c69a !important;
+    }
+
+    .warn {
+      color: #e8bd61 !important;
+    }
+
+    .bad {
+      color: #f07b80 !important;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 1fr);
+      gap: 9px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 9px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      min-width: 0;
+      margin-bottom: 9px;
+    }
+
+    .panel-head {
+      min-height: 33px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--panel-head);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-body {
+      padding: 11px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    th {
+      text-align: left;
+      color: #9fa5a8;
+      font-weight: normal;
+      font-size: 10px;
+      background: #242628;
+      padding: 9px 8px;
+      border-bottom: 1px solid #414446;
+    }
+
+    td {
+      padding: 9px 8px;
+      border-bottom: 1px solid #343739;
+      color: #c9ccce;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .state {
+      font-size: 10px;
+    }
+
+    .state.ok {
+      color: #76c899;
+    }
+
+    .state.fail {
+      color: #f0787e;
+    }
+
+    .state.warn {
+      color: #e9bf64;
+    }
+
+    .state.na {
+      color: #9ba1a4;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 70px minmax(20px, 1fr) 35px;
+      gap: 8px;
+      align-items: center;
+      margin: 12px 0;
+      color: #aeb3b5;
+      font-size: 10px;
+    }
+
+    .bar {
+      height: 12px;
+      background: #373a3c;
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--blue);
+      transition: width 0.2s ease;
+    }
+
+    .bar span.red {
+      background: var(--red);
+    }
+
+    .bar span.orange {
+      background: var(--orange);
+    }
+
+    .bar span.yellow {
+      background: var(--yellow);
+    }
+
+    .bar span.green {
+      background: var(--green);
+    }
+
+    .progress {
+      height: 7px;
+      background: #383b3d;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--blue);
+    }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .service {
+      background: #202224;
+      border: 1px solid var(--line);
+      padding: 10px;
+      min-width: 0;
+    }
+
+    .service-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .service-name {
+      overflow-wrap: anywhere;
+    }
+
+    .dot {
+      height: 7px;
+      width: 7px;
+      border-radius: 50%;
+      background: #777d80;
+      flex-shrink: 0;
+    }
+
+    .dot.ok {
+      background: #59b680;
+    }
+
+    .dot.fail {
+      background: #e26369;
+    }
+
+    .dot.check {
+      background: #e4b34e;
+    }
+
+    .service-state {
+      margin-top: 9px;
+      font-size: 10px;
+      color: #939a9d;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .service a {
+      display: inline-block;
+      margin-top: 7px;
+      font-size: 10px;
+    }
+
+    .small-note {
+      font-size: 10px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .section-title {
+      padding: 13px 0 8px;
+      color: #d9dcdd;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--line);
+      margin-top: 13px;
+      padding-top: 11px;
+      color: #7e8588;
+      font-size: 10px;
+    }
+
+    @media (max-width: 1050px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .service-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .topbar {
+        gap: 12px;
+        padding: 0 10px;
+      }
+
+      .topnav {
+        gap: 10px;
+      }
+
+      .topright .badge {
+        display: none;
+      }
+
+      main {
+        padding: 0 9px 15px;
+      }
+
+      .split {
+        grid-template-columns: 1fr;
+      }
+
+      .service-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .title-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">DepDev<span>Flow</span></div>
+
+    <nav class="topnav">
+      <a href="#overview">Monitoring</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#security">Security</a>
+      <a href="#quality">Code quality</a>
+      <a href="#deployment">Deployment</a>
+    </nav>
+
+    <div class="topright">
+      <span class="badge">LOCAL / DEV</span>
+      <span id="topClock">--:--:--</span>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="side-title">Dashboard</div>
+
+      <a class="side-link active" href="#overview">Overview</a>
+      <a class="side-link" href="#pipeline">Pipeline runs</a>
+      <a class="side-link" href="#security">Security findings</a>
+      <a class="side-link" href="#quality">Code quality</a>
+      <a class="side-link" href="#services">Service status</a>
+      <a class="side-link" href="#deployment">Kubernetes</a>
+      <a class="side-link" href="#research">Research metrics</a>
+
+      <div class="side-bottom">
+        DEPDEVFLOW<br>
+        CONTROL CONSOLE<br>
+        <span>BUILD 1.0.0</span>
+      </div>
+    </aside>
+
+    <main id="overview">
+      <div class="pagebar">
+        <div>All dashboards / <strong>DepDevFlow overview</strong></div>
+
+        <div class="actions">
+          <button class="btn" onclick="refreshDashboard()">Refresh</button>
+          <button class="btn primary" onclick="window.print()">Export view</button>
+        </div>
+      </div>
+
+      <div class="title-row">
+        <div>
+          <h1>Dashboard</h1>
+          <div class="sub">
+            CI/CD pipeline status, security posture, code quality and runtime monitoring
+          </div>
+        </div>
+
+        <div class="time">
+          UPDATED <span id="updated">WAITING</span>
+        </div>
+      </div>
+
+      <div class="notice" id="notice">
+        <span class="notice-dot"></span>
+        <span id="noticeText">
+          Connecting to the DepDevFlow dashboard backend...
+        </span>
+      </div>
+
+      <section class="kpis">
+        <div class="kpi">
+          <div class="kpi-label">LATEST PIPELINE</div>
+          <div class="kpi-value" id="pipelineValue">—</div>
+          <div class="kpi-foot" id="pipelineFoot">Waiting for Jenkins API</div>
+        </div>
+
+        <div class="kpi" id="quality">
+          <div class="kpi-label">QUALITY GATE</div>
+          <div class="kpi-value" id="qualityValue">—</div>
+          <div class="kpi-foot" id="qualityFoot">Waiting for SonarQube API</div>
+        </div>
+
+        <div class="kpi" id="security">
+          <div class="kpi-label">SECURITY FINDINGS</div>
+          <div class="kpi-value" id="findingsValue">—</div>
+          <div class="kpi-foot" id="findingsFoot">Waiting for scanner reports</div>
+        </div>
+
+        <div class="kpi" id="deployment">
+          <div class="kpi-label">PODS READY</div>
+          <div class="kpi-value" id="podsValue">—</div>
+          <div class="kpi-foot" id="podsFoot">Waiting for Kubernetes</div>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        <section class="panel" id="pipeline">
+          <div class="panel-head">
+            <span>Pipeline activity</span>
+            <a id="jenkinsLink" href="http://localhost:8081/" target="_blank" rel="noopener">Open Jenkins ↗</a>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>STAGE</th>
+                  <th>TOOL / CHECK</th>
+                  <th>STATUS</th>
+                  <th>DURATION</th>
+                </tr>
+              </thead>
+
+              <tbody id="stageRows">
+                <tr>
+                  <td colspan="4">Waiting for Jenkins pipeline data...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel-body small-note" id="buildDetail">
+            No Jenkins build information loaded.
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <span>Security posture</span>
+            <span>Scanner evidence</span>
+          </div>
+
+          <div class="panel-body">
+            <div class="bar-row">
+              <span>Critical</span>
+              <div class="bar"><span id="criticalBar" class="red"></span></div>
+              <span id="criticalCount">—</span>
+            </div>
+
+            <div class="bar-row">
+              <span>High</span>
+              <div class="bar"><span id="highBar" class="orange"></span></div>
+              <span id="highCount">—</span>
+            </div>
+
+            <div class="bar-row">
+              <span>Medium</span>
+              <div class="bar"><span id="mediumBar" class="yellow"></span></div>
+              <span id="mediumCount">—</span>
+            </div>
+
+            <div class="bar-row">
+              <span>Low</span>
+              <div class="bar"><span id="lowBar" class="green"></span></div>
+              <span id="lowCount">—</span>
+            </div>
+
+            <div class="small-note" id="findingsDetail">
+              Scanner report status has not been retrieved.
+            </div>
+          </div>
+
+          <div class="panel-head" style="border-top:1px solid var(--line)">
+            <span>Risk engine decision</span>
+            <span id="riskSource">Not loaded</span>
+          </div>
+
+          <div class="panel-body">
+            <div style="display:flex;align-items:baseline;gap:12px">
+              <span style="font-size:28px" id="riskScore">—</span>
+              <span id="riskLevel" class="state na">No decision loaded</span>
+            </div>
+
+            <div class="progress">
+              <span id="riskProgress"></span>
+            </div>
+
+            <p class="small-note" id="riskDecision">
+              The dashboard will display a decision only when an actual risk result is available.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <div class="split">
+        <section class="panel" id="services">
+          <div class="panel-head">
+            <span>Service availability</span>
+            <span>Backend status</span>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>SERVICE</th>
+                  <th>STATUS</th>
+                  <th>DETAIL</th>
+                </tr>
+              </thead>
+
+              <tbody id="serviceRows">
+                <tr><td colspan="3">Loading service status...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <span>Runtime & deployment</span>
+            <span id="kubeStatus">Waiting</span>
+          </div>
+
+          <div class="panel-body">
+            <div class="bar-row">
+              <span>Pods running</span>
+              <div class="bar"><span id="podsBar" class="green"></span></div>
+              <span id="podsRatio">—</span>
+            </div>
+
+            <div class="bar-row">
+              <span>Targets up</span>
+              <div class="bar"><span id="targetsBar" class="green"></span></div>
+              <span id="targetsRatio">—</span>
+            </div>
+
+            <p class="small-note" id="runtimeDetail">
+              Runtime information has not been retrieved.
+            </p>
+
+            <div style="margin-top:12px">
+              <a href="http://localhost:9090/" target="_blank" rel="noopener">Open Prometheus ↗</a>
+              &nbsp; · &nbsp;
+              <a href="http://localhost:3000/" target="_blank" rel="noopener">Open Grafana ↗</a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="section-title" id="research">Research metrics</div>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span>Adaptive scanning experiment</span>
+          <span>Measured data only</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>METRIC</th>
+                <th>BASELINE</th>
+                <th>ADAPTIVE MODE</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <td>Pipeline duration</td>
+                <td>Not recorded</td>
+                <td>Not recorded</td>
+                <td class="state na">Awaiting measurements</td>
+              </tr>
+              <tr>
+                <td>Scanners executed</td>
+                <td>Not recorded</td>
+                <td>Not recorded</td>
+                <td class="state na">Awaiting measurements</td>
+              </tr>
+              <tr>
+                <td>Security detection metrics</td>
+                <td>Not recorded</td>
+                <td>Not recorded</td>
+                <td class="state na">Awaiting experiment</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>DEPDEVFLOW / OPERATIONS DASHBOARD</span>
+        <span>LOCAL DEVELOPMENT ENVIRONMENT</span>
+        <span>LAST UPDATE <span id="footerTime">—</span></span>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+
+    function setText(id, value) {
+      const element = $(id);
+      if (element) {
+        element.textContent =
+          value === null || value === undefined || value === ""
+            ? "—"
+            : String(value);
+      }
+    }
+
+    function setStatus(id, text, status) {
+      const element = $(id);
+      if (!element) return;
+
+      element.textContent = text;
+      element.className = "state " + (
+        status === "connected" || status === "ok" || status === "SUCCESS"
+          ? "ok"
+          : status === "unavailable" || status === "fail" ||
+            status === "FAILURE" || status === "BLOCK"
+            ? "fail"
+            : "na"
+      );
+    }
+
+    function duration(ms) {
+      if (!Number.isFinite(Number(ms)) || Number(ms) <= 0) {
+        return "—";
+      }
+
+      const seconds = Math.round(Number(ms) / 1000);
+
+      if (seconds < 60) return `${seconds}s`;
+
+      const minutes = Math.floor(seconds / 60);
+      const remaining = seconds % 60;
+
+      return `${minutes}m ${remaining}s`;
+    }
+
+    function formatTime(value) {
+      if (!value) return "—";
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return String(value);
+      }
+
+      return date.toLocaleString("en-IN");
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function renderStages(jenkins) {
+      const body = $("stageRows");
+      body.replaceChildren();
+
+      if (jenkins?.status !== "connected") {
+        body.innerHTML =
+          '<tr><td colspan="4">Jenkins data unavailable. Check the service status below.</td></tr>';
+        return;
+      }
+
+      const stages = jenkins.stages || [];
+
+      if (!stages.length) {
+        const message = jenkins.build
+          ? "Build information is available, but stage details were not returned by Jenkins."
+          : "Jenkins is connected, but no build is available yet.";
+
+        body.innerHTML =
+          `<tr><td colspan="4">${escapeHtml(message)}</td></tr>`;
+        return;
+      }
+
+      stages.forEach((stage, index) => {
+        const row = document.createElement("tr");
+        const status = String(stage.status || "UNKNOWN").toUpperCase();
+
+        row.innerHTML = `
+          <td>${String(index + 1).padStart(2, "0")}</td>
+          <td>${escapeHtml(stage.name)}</td>
+          <td><span class="state ${
+            status === "SUCCESS" ? "ok" :
+            status === "FAILED" || status === "FAILURE" ? "fail" :
+            status === "IN_PROGRESS" || status === "PAUSED_PENDING_INPUT"
+              ? "warn" : "na"
+          }">${escapeHtml(status)}</span></td>
+          <td>${escapeHtml(duration(stage.durationMs))}</td>
+        `;
+
+        body.appendChild(row);
+      });
+    }
+
+    function renderServices(sources) {
+      const services = [
+        ["Jenkins", sources.jenkins],
+        ["SonarQube", sources.sonarqube],
+        ["Prometheus", sources.prometheus],
+        ["Kubernetes", sources.kubernetes],
+        ["Application", sources.app]
+      ];
+
+      const body = $("serviceRows");
+      body.replaceChildren();
+
+      for (const [name, data] of services) {
+        const row = document.createElement("tr");
+        const status = data?.status || "unavailable";
+
+        row.innerHTML = `
+          <td>${escapeHtml(name)}</td>
+          <td><span class="state ${
+            status === "connected" ? "ok" : "fail"
+          }">${escapeHtml(status.toUpperCase())}</span></td>
+          <td>${escapeHtml(data?.detail || "No status received")}</td>
+        `;
+
+        body.appendChild(row);
+      }
+    }
+
+    function renderFindings(findings) {
+      const totals = findings?.totals;
+
+      if (!totals || findings.status !== "connected") {
+        setText("findingsValue", "—");
+        setText("findingsFoot", "Scanner reports unavailable");
+        setText(
+          "findingsDetail",
+          findings?.detail || "No scanner data returned."
+        );
+
+        ["critical", "high", "medium", "low"].forEach(level => {
+          setText(level + "Count", "—");
+          $(level + "Bar").style.width = "0%";
+        });
+
+        return;
+      }
+
+      setText("findingsValue", findings.total);
+      setText("findingsFoot", `${findings.reports.length} report(s) parsed`);
+      setText("findingsDetail", findings.detail);
+
+      const maximum = Math.max(
+        1,
+        totals.critical,
+        totals.high,
+        totals.medium,
+        totals.low
+      );
+
+      ["critical", "high", "medium", "low"].forEach(level => {
+        const count = Number(totals[level] || 0);
+
+        setText(level + "Count", count);
+
+        $(level + "Bar").style.width =
+          `${Math.min(100, (count / maximum) * 100)}%`;
+      });
+    }
+
+    function renderRisk(risk) {
+      const score = risk?.score;
+
+      setText(
+        "riskScore",
+        score === null || score === undefined ? "—" : score
+      );
+
+      setText("riskLevel", risk?.decision || "UNKNOWN");
+      setText("riskSource", risk?.source || "No result file");
+
+      const decision = String(risk?.decision || "UNKNOWN").toUpperCase();
+
+      $("riskLevel").className =
+        "state " + (
+          decision === "PROCEED" || decision === "ALLOW" || decision === "PASS"
+            ? "ok"
+            : decision === "BLOCK" || decision === "FAIL"
+              ? "fail"
+              : "na"
+        );
+
+      $("riskProgress").style.width =
+        score === null || score === undefined
+          ? "0%"
+          : `${Math.max(0, Math.min(100, Number(score)))}%`;
+
+      $("riskDecision").textContent =
+        risk?.detail || "No risk-engine result returned.";
+    }
+
+    function renderDashboard(data) {
+      const sources = data.sources || {};
+      const jenkins = sources.jenkins || {};
+      const sonar = sources.sonarqube || {};
+      const prom = sources.prometheus || {};
+      const kube = sources.kubernetes || {};
+
+      // Pipeline card
+      if (jenkins.status === "connected" && jenkins.build) {
+        const build = jenkins.build;
+
+        setText(
+          "pipelineValue",
+          `#${build.number} ${build.result}`
+        );
+
+        setText(
+          "pipelineFoot",
+          `Duration: ${duration(build.durationMs)}`
+        );
+
+        $("pipelineFoot").className =
+          "kpi-foot " + (
+            build.result === "SUCCESS" ? "good" :
+            build.result === "FAILURE" || build.result === "ABORTED"
+              ? "bad" : "warn"
+          );
+
+        setText(
+          "buildDetail",
+          `${build.displayName || "#" + build.number} · ` +
+          `Started: ${formatTime(build.timestamp)} · ` +
+          `${build.building ? "Build in progress" : "Build completed"}`
+        );
+      } else {
+        setText("pipelineValue", "—");
+        setText("pipelineFoot", jenkins.detail || "Jenkins unavailable");
+        setText("buildDetail", jenkins.detail || "No Jenkins build data.");
+      }
+
+      $("jenkinsLink").href =
+        jenkins.url || "http://localhost:8081/";
+
+      renderStages(jenkins);
+
+      // SonarQube quality gate
+      setText(
+        "qualityValue",
+        sonar.status === "connected" ? sonar.qualityGate : "—"
+      );
+
+      setText("qualityFoot", sonar.detail || "SonarQube unavailable");
+
+      $("qualityFoot").className =
+        "kpi-foot " + (
+          sonar.qualityGate === "OK" ? "good" :
+          sonar.qualityGate === "ERROR" ? "bad" : "warn"
+        );
+
+      // Security reports
+      renderFindings(data.findings);
+
+      // Kubernetes
+      if (kube.status === "connected") {
+        setText("podsValue", `${kube.running}/${kube.total}`);
+        setText("podsFoot", `${kube.pending} pending · ${kube.failed} failed`);
+
+        const podPercentage = kube.total
+          ? (kube.running / kube.total) * 100
+          : 0;
+
+        $("podsBar").style.width = `${podPercentage}%`;
+        setText("podsRatio", `${Math.round(podPercentage)}%`);
+        setText("kubeStatus", "CONNECTED");
+
+        setText(
+          "runtimeDetail",
+          `${kube.detail} Ready containers: ${kube.readyContainers}/` +
+          `${kube.totalContainers}. Total pods: ${kube.total}.`
+        );
+      } else {
+        setText("podsValue", "—");
+        setText("podsFoot", kube.detail || "Kubernetes unavailable");
+        setText("podsRatio", "—");
+        setText("kubeStatus", "UNAVAILABLE");
+        setText("runtimeDetail", kube.detail || "No Kubernetes data.");
+        $("podsBar").style.width = "0%";
+      }
+
+      // Prometheus
+      if (prom.status === "connected") {
+        setText("targetsRatio", `${prom.upTargets}/${prom.totalTargets}`);
+
+        const targetPercentage = prom.totalTargets
+          ? (prom.upTargets / prom.totalTargets) * 100
+          : 0;
+
+        $("targetsBar").style.width = `${targetPercentage}%`;
+      } else {
+        setText("targetsRatio", "—");
+        $("targetsBar").style.width = "0%";
+      }
+
+      // Risk engine
+      renderRisk(data.riskEngine);
+
+      // Service connections
+      renderServices(sources);
+
+      // Overall notice
+      const notice = $("notice");
+
+      const connectedCount = [
+        jenkins,
+        sonar,
+        prom,
+        kube,
+        sources.app
+      ].filter(item => item.status === "connected").length;
+
+      notice.className = "notice " +
+        (connectedCount === 5 ? "good" : connectedCount === 0 ? "bad" : "");
+
+      setText(
+        "noticeText",
+        `${connectedCount}/5 integrations connected. ` +
+        `Jenkins: ${jenkins.status || "unknown"}; ` +
+        `SonarQube: ${sonar.status || "unknown"}; ` +
+        `Prometheus: ${prom.status || "unknown"}; ` +
+        `Kubernetes: ${kube.status || "unknown"}.`
+      );
+
+      setText(
+        "updated",
+        new Date(data.generatedAt || Date.now()).toLocaleTimeString("en-IN", {
+          hour12: false
+        })
+      );
+
+      setText(
+        "footerTime",
+        new Date().toLocaleString("en-IN")
+      );
+    }
+
+    async function refreshDashboard() {
+      setText("updated", "LOADING");
+
+      try {
+        const response = await fetch(
+          "/api/dashboard?ts=" + Date.now(),
+          {
+            cache: "no-store",
+            headers: { Accept: "application/json" }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Dashboard API returned HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderDashboard(data);
+      } catch (error) {
+        $("notice").className = "notice bad";
+        setText(
+          "noticeText",
+          `Dashboard API error: ${error.message}. Check server.js and the browser console.`
+        );
+
+        setText("updated", "ERROR");
+        console.error("DepDevFlow dashboard refresh failed:", error);
+      }
+    }
+
+    function tickClock() {
+      setText(
+        "topClock",
+        new Date().toLocaleTimeString("en-IN", { hour12: false })
+      );
+    }
+
+    tickClock();
+    refreshDashboard();
+
+    setInterval(tickClock, 1000);
+    setInterval(refreshDashboard, 15000);
+  </script>
+</body>
+</html>
