@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17191b">
+<title>DepDevFlow — Operations Dashboard</title>
+<style>
+:root{
+  --bg:#17191b;--bar:#303234;--bar2:#242628;--panel:#202224;--panel-head:#292b2d;
+  --line:#3b3e40;--text:#e2e4e5;--muted:#92989b;--blue:#568fc5;
+  --green:#4b9b72;--red:#d6535b;--yellow:#e4b34e;--orange:#e58a3a;
+  --font:Arial,Helvetica,sans-serif;--mono:Consolas,"Courier New",monospace
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:12px var(--font)}
+a{color:#8bb9e3;text-decoration:none}a:hover{text-decoration:underline}
+button{font:inherit}
+.topbar{height:43px;background:#303234;border-bottom:1px solid #46484a;display:flex;align-items:center;padding:0 16px;gap:22px;position:sticky;top:0;z-index:5}
+.brand{font-size:19px;font-weight:bold;letter-spacing:-.4px;color:#f0f1f2;white-space:nowrap}.brand b{color:#e58a3a}
+.topnav{display:flex;align-items:center;gap:18px;color:#d0d2d3;height:100%;font-size:11px}
+.topnav a{color:#d0d2d3;height:100%;display:flex;align-items:center;border-bottom:2px solid transparent}
+.topnav a.active{border-bottom-color:#e58a3a;color:white}
+.topright{margin-left:auto;display:flex;align-items:center;gap:13px;color:#c3c6c8}
+.topright .badge{border:1px solid #56595b;padding:5px 8px;border-radius:2px;font:10px var(--mono)}
+.shell{display:grid;grid-template-columns:164px minmax(0,1fr);min-height:calc(100vh - 43px)}
+.sidebar{background:#202224;border-right:1px solid #37393b;padding:14px 0}
+.side-title{font-size:10px;text-transform:uppercase;letter-spacing:1.1px;color:#858b8e;padding:8px 15px}
+.side-link{display:flex;align-items:center;gap:10px;padding:10px 15px;color:#c5c8ca;border-left:3px solid transparent;font-size:12px}
+.side-link:hover{background:#292c2e;text-decoration:none}
+.side-link.active{background:#303335;border-left-color:var(--orange);color:#fff}
+.side-ico{width:14px;text-align:center;color:#a9afb2;font-size:14px}
+.side-bottom{margin:25px 12px 0;border-top:1px solid #3b3e40;padding:14px 3px;color:#858b8e;font:10px var(--mono);line-height:1.8}
+main{padding:0 17px 22px;min-width:0}
+.pagebar{height:43px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);color:#aeb3b5}
+.pagebar strong{color:#e2e4e5;font-weight:normal}
+.actions{display:flex;gap:7px}
+.btn{background:#3a3d3f;border:1px solid #55595b;color:#e1e3e4;padding:6px 10px;border-radius:2px;cursor:pointer}
+.btn:hover{background:#484b4d}
+.btn.primary{background:#426d91;border-color:#5687ad}
+.title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;padding:17px 0 13px}
+h1{font-size:20px;font-weight:400;margin:0 0 6px;letter-spacing:-.3px}
+.sub{color:var(--muted);font-size:11px}
+.time{font:10px var(--mono);color:#a8adaf}
+.notice{display:flex;align-items:center;gap:10px;background:#242628;border:1px solid #3b3e40;padding:10px 12px;margin-bottom:13px;color:#c3c7c9}
+.notice-dot{width:7px;height:7px;background:var(--orange);border-radius:50%;flex-shrink:0}
+.notice strong{color:#f0f1f2;font-weight:normal}
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,1fr);gap:9px}
+.panel{background:var(--panel);border:1px solid var(--line);min-width:0}
+.panel-head{height:32px;background:var(--panel-head);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:11px;color:#d7d9da}
+.panel-head .dots{color:#8d9396;letter-spacing:2px}
+.panel-body{padding:10px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:9px}
+.kpi{border:1px solid var(--line);background:#202224;min-height:88px;padding:10px}
+.kpi-label{color:#a9afb2;font-size:10px;margin-bottom:12px}
+.kpi-value{font-size:23px;font-weight:400;line-height:1.1}
+.kpi-foot{font-size:10px;color:#8f9699;margin-top:7px;white-space:normal}
+.kpi-foot.good{color:#77c69a}.kpi-foot.warn{color:#e8bd61}.kpi-foot.bad{color:#f07b80}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:11px}
+th{text-align:left;background:#242628;color:#9fa5a8;font-weight:normal;font-size:10px;padding:8px 8px;border-bottom:1px solid #414446}
+td{padding:8px;border-bottom:1px solid #343739;color:#c9ccce}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#282b2d}
+.sev{display:inline-block;min-width:65px;text-align:center;padding:4px 6px;font-size:10px;color:#17191b;background:#9ca3a6}
+.sev.critical{background:#d6535b;color:#fff}.sev.high{background:#e58a3a;color:#17191b}.sev.medium{background:#e4b34e}.sev.low{background:#76a9ce}.sev.ok{background:#4b9b72;color:#fff}.sev.na{background:#5a5e60;color:#e1e3e4}
+.state{font-size:10px}.state.ok{color:#76c899}.state.fail{color:#f0787e}.state.warn{color:#e9bf64}.state.na{color:#9ba1a4}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.progress{height:7px;background:#383b3d;overflow:hidden;margin-top:7px}
+.progress span{display:block;height:100%;background:#568fc5}
+.bar-row{display:grid;grid-template-columns:100px minmax(20px,1fr) 32px;gap:8px;align-items:center;margin:11px 0;color:#aeb3b5;font-size:10px}
+.bar{height:12px;background:#373a3c}.bar span{display:block;height:100%;background:#568fc5}
+.bar span.red{background:#d6535b}.bar span.yellow{background:#e4b34e}.bar span.green{background:#4b9b72}
+.service-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.service{border:1px solid var(--line);padding:10px;background:#202224;min-width:0}
+.service-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.service-name{font-size:11px;color:#e0e2e3}
+.dot{height:7px;width:7px;border-radius:50%;background:#777d80;flex-shrink:0}
+.dot.ok{background:#59b680}.dot.fail{background:#e26369}.dot.check{background:#e4b34e}
+.service-state{color:#939a9d;font-size:10px;margin-top:9px;line-height:1.5;min-height:28px}
+.service a{display:inline-block;margin-top:7px;font-size:10px}
+.footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:13px;padding-top:11px;color:#7e8588;font:10px var(--mono)}
+.small-note{color:#858b8e;font-size:10px;line-height:1.6}
+@media(max-width:1050px){.dashboard-grid{grid-template-columns:1fr}.service-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.shell{grid-template-columns:1fr}.sidebar{display:none}.topbar{gap:12px;padding:0 10px}.topnav{gap:10px;overflow:auto}.topnav a:nth-child(n+4){display:none}main{padding:0 9px 15px}.split{grid-template-columns:1fr}.service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.title-row{align-items:flex-start;flex-direction:column}.kpi-value{font-size:21px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">DepDev<b>Flow</b></div>
+  <nav class="topnav">
+    <a href="#overview" class="active">Monitoring</a><a href="#pipeline">Pipeline</a><a href="#security">Security</a><a href="#quality">Code quality</a><a href="#deployment">Deployment</a>
+  </nav>
+  <div class="topright"><span class="badge">LOCAL / DEV</span><span id="topClock">--:--:--</span></div>
+</header>
+<div class="shell">
+<aside class="sidebar">
+  <div class="side-title">Dashboard</div>
+  <a class="side-link active" href="#overview"><span class="side-ico">▦</span>Overview</a>
+  <a class="side-link" href="#pipeline"><span class="side-ico">≡</span>Pipeline runs</a>
+  <a class="side-link" href="#security"><span class="side-ico">◆</span>Security findings</a>
+  <a class="side-link" href="#quality"><span class="side-ico">▤</span>Code quality</a>
+  <a class="side-link" href="#monitoring"><span class="side-ico">⌁</span>Service status</a>
+  <a class="side-link" href="#deployment"><span class="side-ico">▣</span>Kubernetes</a>
+  <a class="side-link" href="#research"><span class="side-ico">◷</span>Research metrics</a>
+  <div class="side-bottom">DEPDEVFLOW<br>CONTROL CONSOLE<br><span style="color:#c6c9ca">BUILD 1.0.0</span></div>
+</aside>
+<main id="overview">
+  <div class="pagebar"><div>All dashboards&nbsp; / &nbsp;<strong>DepDevFlow overview</strong></div><div class="actions"><button class="btn" onclick="refresh()">Refresh</button><button class="btn primary" onclick="window.print()">Export view</button></div></div>
+  <div class="title-row"><div><h1>Dashboard</h1><div class="sub">CI/CD pipeline status, security posture, code quality and runtime monitoring</div></div><div class="time">UPDATED <span id="updated">NOT CHECKED</span></div></div>
+  <div class="notice"><span class="notice-dot"></span><span><strong>Operational overview:</strong> service reachability is checked in the browser. Pipeline, scan and workload metrics remain unreported until connected to the backend API.</span></div>
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-label">LATEST PIPELINE</div><div class="kpi-value" id="pipelineValue">—</div><div class="kpi-foot" id="pipelineFoot">Jenkins data not connected</div></div>
+    <div class="kpi" id="quality"><div class="kpi-label">QUALITY GATE</div><div class="kpi-value" id="qualityValue">—</div><div class="kpi-foot" id="qualityFoot">SonarQube data not connected</div></div>
+    <div class="kpi" id="security"><div class="kpi-label">SECURITY FINDINGS</div><div class="kpi-value" id="findingsValue">—</div><div class="kpi-foot" id="findingsFoot">Scanner data not connected</div></div>
+    <div class="kpi" id="deployment"><div class="kpi-label">PODS READY</div><div class="kpi-value" id="podsValue">—</div><div class="kpi-foot" id="podsFoot">Kubernetes data not connected</div></div>
+  </div>
+  <div class="dashboard-grid">
+    <section class="panel" id="pipeline">
+      <div class="panel-head"><span>Pipeline activity</span><span class="dots">•••</span></div>
+      <div class="table-wrap"><table><thead><tr><th>STAGE</th><th>TOOL / CHECK</th><th>STATUS</th><th>DETAIL</th></tr></thead>
+      <tbody>
+        <tr><td>01</td><td>Environment & dependencies</td><td><span class="state na">● Awaiting run</span></td><td>Node.js / npm</td></tr>
+        <tr><td>02</td><td>Unit & integration tests</td><td><span class="state na">● Awaiting run</span></td><td>Node test runner</td></tr>
+        <tr><td>03</td><td>Change impact analysis</td><td><span class="state na">● Awaiting run</span></td><td>Adaptive scan plan</td></tr>
+        <tr><td>04</td><td>Secret detection</td><td><span class="state na">● Awaiting run</span></td><td>Gitleaks</td></tr>
+        <tr><td>05</td><td>Static analysis</td><td><span class="state na">● Awaiting run</span></td><td>Semgrep / SonarQube</td></tr>
+        <tr><td>06</td><td>Dependency scan</td><td><span class="state na">● Awaiting run</span></td><td>npm audit</td></tr>
+        <tr><td>07</td><td>Container scan</td><td><span class="state na">● Awaiting run</span></td><td>Trivy</td></tr>
+        <tr><td>08</td><td>Risk decision & release</td><td><span class="state na">● Awaiting run</span></td><td>Risk engine / Kubernetes</td></tr>
+      </tbody></table></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><span>Security posture</span><span class="dots">•••</span></div>
+      <div class="panel-body">
+        <div class="bar-row"><span>Critical</span><div class="bar"><span class="red" style="width:0%"></span></div><span>—</span></div>
+        <div class="bar-row"><span>High</span><div class="bar"><span class="red" style="width:0%"></span></div><span>—</span></div>
+        <div class="bar-row"><span>Medium</span><div class="bar"><span class="yellow" style="width:0%"></span></div><span>—</span></div>
+        <div class="bar-row"><span>Low</span><div class="bar"><span style="width:0%"></span></div><span>—</span></div>
+        <div class="small-note">Finding counts will populate when scanner JSON reports are exposed through the dashboard backend.</div>
+      </div>
+      <div class="panel-head" style="border-top:1px solid var(--line)" id="risk"><span>Risk engine decision</span><span class="dots">•••</span></div>
+      <div class="panel-body">
+        <div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:28px" id="riskScore">—</span><span id="riskLevel" class="state na">No assessment loaded</span></div>
+        <div class="progress"><span id="riskProgress" style="width:0%"></span></div>
+        <p class="small-note" id="riskDecision">No release decision is shown until an actual risk-engine result is connected.</p>
+      </div>
+    </section>
+  </div>
+  <div class="split">
+    <section class="panel">
+      <div class="panel-head"><span>Service availability</span><span class="dots">•••</span></div>
+      <div class="table-wrap"><table><thead><tr><th>SERVICE</th><th>ENDPOINT</th><th>STATUS</th></tr></thead><tbody>
+        <tr><td>Jenkins</td><td>localhost:8081</td><td id="jenkinsTable"><span class="state na">Checking</span></td></tr>
+        <tr><td>SonarQube</td><td>localhost:9000</td><td id="sonarTable"><span class="state na">Checking</span></td></tr>
+        <tr><td>Prometheus</td><td>localhost:9090</td><td id="prometheusTable"><span class="state na">Checking</span></td></tr>
+        <tr><td>Grafana</td><td>localhost:3000</td><td id="grafanaTable"><span class="state na">Checking</span></td></tr>
+        <tr><td>Application</td><td>localhost:8080/health</td><td id="appTable"><span class="state na">Checking</span></td></tr>
+      </tbody></table></div>
+    </section>
+    <section class="panel" id="monitoring">
+      <div class="panel-head"><span>Runtime & deployment</span><span class="dots">•••</span></div>
+      <div class="panel-body">
+        <div class="bar-row"><span>Pods ready</span><div class="bar"><span class="green" id="podsBar" style="width:0%"></span></div><span id="podsRatio">—</span></div>
+        <div class="bar-row"><span>Deployment</span><div class="bar"><span id="deployBar" style="width:0%"></span></div><span id="deployState">—</span></div>
+        <p class="small-note">Runtime values are not guessed. Connect Kubernetes metrics through server.js to populate readiness and rollout status.</p>
+        <div style="margin-top:12px"><a href="http://localhost:9090/" target="_blank" rel="noopener">Open Prometheus ↗</a>&nbsp;&nbsp;·&nbsp;&nbsp;<a href="http://localhost:3000/" target="_blank" rel="noopener">Open Grafana ↗</a></div>
+      </div>
+    </section>
+  </div>
+  <div class="section-title" id="research" style="padding:13px 0 8px;color:#d9dcdd">Research metrics</div>
+  <section class="panel">
+    <div class="panel-head"><span>Adaptive scanning experiment baseline</span><span class="dots">•••</span></div>
+    <div class="table-wrap"><table><thead><tr><th>METRIC</th><th>BASELINE</th><th>ADAPTIVE MODE</th><th>STATUS</th></tr></thead><tbody>
+      <tr><td>Pipeline duration</td><td>Not recorded</td><td>Not recorded</td><td><span class="state na">Awaiting measurements</span></td></tr>
+      <tr><td>Scanners executed</td><td>Not recorded</td><td>Not recorded</td><td><span class="state na">Awaiting measurements</span></td></tr>
+      <tr><td>Security findings / coverage</td><td>Not recorded</td><td>Not recorded</td><td><span class="state na">Awaiting measurements</span></td></tr>
+      <tr><td>Release decisions</td><td>Not recorded</td><td>Not recorded</td><td><span class="state na">Awaiting measurements</span></td></tr>
+    </tbody></table></div>
+  </section>
+  <footer class="footer"><span>DEPDEVFLOW / OPERATIONS DASHBOARD</span><span>LOCAL DEVELOPMENT ENVIRONMENT</span><span>UPDATED <span id="footerTime">—</span></span></footer>
+</main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+function tick(){const d=new Date();$('topClock').textContent=d.toLocaleTimeString('en-IN',{hour12:false});$('footerTime').textContent=d.toLocaleString('en-IN');}
+const checks=[
+ ['jenkins','http://localhost:8081/login','jenkinsTable'],
+ ['sonar','http://localhost:9000/api/system/status','sonarTable'],
+ ['prometheus','http://localhost:9090/-/healthy','prometheusTable'],
+ ['grafana','http://localhost:3000/api/health','grafanaTable'],
+ ['app','http://localhost:8080/health','appTable']
+];
+async function checkService(name,url,tableId){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),3000);
+ let ok=false;
+ try{await fetch(url,{mode:'no-cors',cache:'no-store',signal:controller.signal});ok=true}catch(e){ok=false}finally{clearTimeout(timer)}
+ const status=ok?'Reachable (browser probe)':'Unavailable / blocked';
+ const state=ok?'ok':'fail';
+ const row=$(tableId);
+ if(row)row.innerHTML='<span class="state '+state+'">● '+status+'</span>';
+}
+async function refresh(){
+ $('updated').textContent='CHECKING';
+ await Promise.all(checks.map(c=>checkService(...c)));
+ $('updated').textContent=new Date().toLocaleTimeString('en-IN',{hour12:false});
+}
+tick();setInterval(tick,1000);refresh();setInterval(refresh,60000);
+</script>
+</body>
+</html>
